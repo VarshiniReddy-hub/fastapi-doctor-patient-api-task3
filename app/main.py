@@ -1,33 +1,30 @@
-import logging
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine
 from app import models
-from app.routes import doctors, patients, auth
 
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
-
-logger = logging.getLogger(__name__)
+from app.routes import auth
+from app.routes import doctors
+from app.routes import patients
+from app.routes import appointments
 
 
 Base.metadata.create_all(bind=engine)
 
 
-app = FastAPI(title="Doctor Patient API")
+app = FastAPI(
+    title="Doctor Patient API",
+    version="0.1.0"
+)
 
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://127.0.0.1:8000"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"]
+    allow_headers=["*"],
 )
 
 
@@ -46,8 +43,14 @@ app.include_router(
     prefix="/api/v1"
 )
 
+app.include_router(
+    appointments.router,
+    prefix="/api/v1"
+)
+
 
 @app.get("/")
 def root():
-    logger.info("Root API endpoint accessed")
-    return {"message": "Doctor Patient API is running"}
+    return {
+        "message": "Doctor Patient API is running"
+    }

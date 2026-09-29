@@ -12,15 +12,41 @@ router = APIRouter(
 
 @router.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    if form_data.username != "admin" or form_data.password != "admin123":
-        raise HTTPException(
-            status_code=401,
-            detail="Incorrect username or password"
+
+    # Admin login
+    if (
+        form_data.username == "admin"
+        and form_data.password == "admin123"
+    ):
+        access_token = create_access_token(
+            username="admin",
+            role="admin"
         )
 
-    access_token = create_access_token()
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "role": "admin"
+        }
 
-    return {
-        "access_token": access_token,
-        "token_type": "bearer"
-    }
+    # Doctor login
+    if (
+        form_data.username == "doctor"
+        and form_data.password == "doctor123"
+    ):
+        access_token = create_access_token(
+            username="doctor",
+            role="doctor",
+            doctor_id=1
+        )
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "role": "doctor"
+        }
+
+    raise HTTPException(
+        status_code=401,
+        detail="Incorrect username or password"
+    )

@@ -12,7 +12,7 @@ from app.services import (
     update_doctor,
     delete_doctor
 )
-from app.auth import get_current_user
+from app.auth import get_current_user, require_admin
 
 
 router = APIRouter(
@@ -25,24 +25,27 @@ router = APIRouter(
 def add_doctor(
     doctor: DoctorCreate,
     db: Session = Depends(get_db),
-    current_user: str = Depends(get_current_user)
+    current_user=Depends(require_admin)
 ):
     return create_doctor(db, doctor)
 
 
 @router.get("/")
 def get_doctors(
-    specialization: Optional[str] = None,
-    is_active: Optional[bool] = None,
+    specialization: Optional[str] = Query(None),
+    is_active: Optional[bool] = Query(None),
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
 ):
     query = db.query(models.Doctor)
 
     if specialization:
         query = query.filter(
-            models.Doctor.specialization.ilike(specialization)
+            models.Doctor.specialization.ilike(
+                f"%{specialization}%"
+            )
         )
 
     if is_active is not None:
@@ -58,16 +61,34 @@ def get_doctors(
 
     return {
         "total": total,
-        "current_page": page,
+        "page": page,
         "limit": limit,
         "data": doctors
     }
 
 
+@router.get("/{doctor_id}")
+def get_doctor_by_id(
+    doctor_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    doctor = get_doctor(db, doctor_id)
+
+    if not doctor:
+        raise HTTPException(
+            status_code=404,
+            detail="Doctor not found"
+        )
+
+    return doctor
+
+
 @router.get("/{doctor_id}/patients")
 def get_doctor_patients(
     doctor_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
 ):
     doctor = db.query(models.Doctor).filter(
         models.Doctor.id == doctor_id
@@ -79,31 +100,26 @@ def get_doctor_patients(
             detail="Doctor not found"
         )
 
-    if not doctor.is_active:
-        raise HTTPException(
-            status_code=400,
-            detail="Doctor is inactive"
-        )
+    if current_user["role"] == "doctor":
+        if current_user["doctor_id"] != doctor_id:
+            raise HTTPException(
+                status_code=403,
+                detail="You can only view your assigned patients"
+            )
 
-    return db.query(models.Patient).filter(
+    patients = db.query(models.Patient).filter(
         models.Patient.doctor_id == doctor_id
     ).all()
 
-
-@router.get("/{doctor_id}")
-def get_doctor_by_id(
-    doctor_id: int,
-    db: Session = Depends(get_db)
-):
-    return get_doctor(db, doctor_id)
+    return patients
 
 
 @router.put("/{doctor_id}")
 def update_doctor_details(
     doctor_id: int,
-    doctor: DoctorUpdate,
+    doctor: DoctorCreate,
     db: Session = Depends(get_db),
-    current_user: str = Depends(get_current_user)
+    current_user=Depends(require_admin)
 ):
     return update_doctor(db, doctor_id, doctor)
 
@@ -113,7 +129,7 @@ def patch_doctor(
     doctor_id: int,
     doctor: DoctorUpdate,
     db: Session = Depends(get_db),
-    current_user: str = Depends(get_current_user)
+    current_user=Depends(require_admin)
 ):
     return update_doctor(db, doctor_id, doctor)
 
@@ -122,6 +138,6 @@ def patch_doctor(
 def delete_doctor_by_id(
     doctor_id: int,
     db: Session = Depends(get_db),
-    current_user: str = Depends(get_current_user)
+    current_user=Depends(require_admin)
 ):
     return delete_doctor(db, doctor_id)

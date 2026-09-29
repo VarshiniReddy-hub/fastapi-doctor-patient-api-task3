@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -26,3 +26,13 @@ class Patient(Base):
     doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=True)
 
     doctor = relationship("Doctor", back_populates="patients")
+
+
+class Appointment(Base):
+    __tablename__ = "appointments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=False)
+    patient_id = Column(Integer, ForeignKey("patients.id"), nullable=False)
+    appointment_date = Column(DateTime, nullable=False)
+    status = Column(String, default="scheduled", nullable=False)
