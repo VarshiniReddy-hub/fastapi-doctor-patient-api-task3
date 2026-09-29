@@ -1,44 +1,68 @@
-# FastAPI Doctor Patient API - Task 3
+# Doctor Patient Management API
 
-This project is an enhanced version of the Doctor Patient API developed using FastAPI.
-
-The project includes doctor and patient management, database integration, authentication, validation, filtering, pagination, testing, and other production-level improvements.
+A FastAPI backend application for managing doctors, patients, authentication, and appointments.
 
 ## Technologies Used
 
 - Python
 - FastAPI
-- Pydantic
 - SQLAlchemy
 - SQLite
+- Pydantic
 - JWT Authentication
-- Uvicorn
 - Pytest
-- Docker
+- Uvicorn
 
 ## Features
 
-- Doctor management
-- Patient management
-- Doctor-Patient relationship
-- Assign patients to doctors
-- Doctor CRUD operations
-- Patient CRUD operations
-- Soft delete for doctors
-- Email validation
-- Phone number validation
-- Unique doctor email validation
-- Filtering
-- Pagination
-- SQLite database
-- SQLAlchemy ORM
-- JWT authentication
-- API versioning
-- Logging
-- CORS
-- Environment variables
-- Docker support
-- Unit testing using pytest
+### Authentication
+- JWT based login
+- Role-based authorization
+- Admin and Doctor roles
+
+### Doctor Management
+- Add doctor
+- View doctors
+- View doctor by ID
+- Update doctor
+- Patch doctor details
+- Delete doctor
+- Filter doctors by specialization and active status
+- Pagination support
+
+### Patient Management
+- Add patient
+- View patients
+- View patient by ID
+- Update patient
+- Patch patient details
+- Delete patient
+- Doctors can view their assigned patients
+
+### Appointment Management
+- Create appointments
+- View appointments
+- View appointment by ID
+- Update appointments
+- Delete appointments
+- View appointments by doctor
+- View appointments by patient
+- Validate doctor and patient
+- Prevent appointments for inactive doctors
+- Prevent overlapping appointments
+
+### Data Integrity
+- Unique doctor email
+- Foreign key relationships
+- Database error handling
+- Meaningful API error messages
+
+### Testing
+- API tests using Pytest
+- Authentication testing
+- Protected API testing
+- Doctor API testing
+- Patient API testing
 
 ## Project Structure
 
@@ -46,28 +70,27 @@ The project includes doctor and patient management, database integration, authen
 Task3/
 │
 ├── app/
-│   ├── routes/
-│   │   ├── __init__.py
-│   │   ├── auth.py
-│   │   ├── doctors.py
-│   │   └── patients.py
-│   │
 │   ├── __init__.py
 │   ├── auth.py
 │   ├── database.py
 │   ├── main.py
 │   ├── models.py
 │   ├── schemas.py
-│   └── services.py
+│   ├── services.py
+│   │
+│   └── routes/
+│       ├── __init__.py
+│       ├── auth.py
+│       ├── doctors.py
+│       ├── patients.py
+│       └── appointments.py
 │
 ├── tests/
 │   └── test_api.py
 │
 ├── SCREENSHOTS/
 │
-├── .env
 ├── .gitignore
-├── Dockerfile
 ├── pytest.ini
 ├── requirements.txt
 └── README.md
